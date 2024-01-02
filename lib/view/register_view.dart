@@ -1,17 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../firebase_options.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
   @override
@@ -33,7 +33,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Login Page'),
+          title: const Text(' Register'),
         ),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -69,41 +69,24 @@ class _LoginViewState extends State<LoginView> {
 
                             try {
                               final userCredential = await FirebaseAuth.instance
-                                  .signInWithEmailAndPassword(
+                                  .createUserWithEmailAndPassword(
                                       email: email, password: password);
 
                               print("userCredential${userCredential}");
                             } on FirebaseAuthException catch (e) {
                               print(e.code);
-                              if (e.code == 'user-not-found') {
-                                print("User not Found");
-                                const snackBar = SnackBar(
+                              if (e.code == 'weak-password') {
+                                print('weak password');
+                                final snackBar = SnackBar(
                                   backgroundColor: Colors.cyan,
-                                  content: Text("User not Found"),
-                                );
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(snackBar);
-                              } else if (e.code == 'wrong-password') {
-                                print("Wrong passcode");
-                                const snackBar = SnackBar(
-                                  backgroundColor: Colors.cyan,
-                                  content: Text("Wrong password"),
+                                  content: Text(e.code.toString()),
                                 );
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(snackBar);
                               }
-                            } catch (e) {
-                              print(e);
-                              print("runtime${e.runtimeType}");
-                              final snackBar = SnackBar(
-                                backgroundColor: Colors.cyan,
-                                content: Text(e.toString()),
-                              );
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(snackBar);
                             }
                           },
-                          child: const Text('Login'),
+                          child: const Text('Register'),
                         ),
                       ),
                     ],
