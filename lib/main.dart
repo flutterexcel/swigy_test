@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:new_flutter/view/login_view.dart';
+import 'package:new_flutter/view/register_view.dart';
+import 'package:new_flutter/view/verify_email_view.dart';
 import 'firebase_options.dart';
 
 void main() {
@@ -12,6 +14,10 @@ void main() {
     title: 'My Test App',
     theme: ThemeData(primarySwatch: Colors.cyan),
     home: const HomePage(),
+    routes: {
+      "/login/": (context) => const LoginView(),
+      "/register/": (context) => const RegisterView(),
+    },
   ));
 }
 
@@ -20,37 +26,50 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Home '),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: FutureBuilder(
-            future: Firebase.initializeApp(
-              options: DefaultFirebaseOptions.currentPlatform,
-            ),
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.done:
-                  final user = FirebaseAuth.instance.currentUser;
-
-                  if (user?.emailVerified ?? false) {
-                    print("You are a verified user ");
-                  } else {
-                    print('You need to verify your email at first');
-                  }
-                  return const Text('Done');
-
-                default:
-                  return const Text('Loading');
+    return FutureBuilder(
+      future: Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      ),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.done:
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              if (user.emailVerified) {
+                // print("Email is verified");
+                return const NotesView();
+              } else {
+                return const VerifyEmailView();
               }
-            },
-          ),
-        ));
+            } else {
+              return const LoginView();
+            }
+
+          // return const Text("Done");
+
+          default:
+            return const CircularProgressIndicator();
+        }
+      },
+    );
   }
 }
 
+class NotesView extends StatefulWidget {
+  const NotesView({super.key});
+
+  @override
+  State<NotesView> createState() => _NotesViewState();
+}
+
+class _NotesViewState extends State<NotesView> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Main Ui")),
+    );
+  }
+}
 
 // class MyApp extends StatelessWidget {
 //   const MyApp({super.key});
@@ -67,7 +86,7 @@ class HomePage extends StatelessWidget {
 //       home: const MyHomePage(title: 'Swiggy Dynamic Page'),
 //     );
 //   }
-// } 
+// }
 
 // class MyHomePage extends StatefulWidget {
 //   const MyHomePage({super.key, required this.title});
