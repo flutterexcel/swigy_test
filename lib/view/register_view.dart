@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
+import 'package:new_flutter/constants/routes.dart';
+import 'package:new_flutter/utilities/show_error_dialouge.dart';
+import 'dart:developer' as devtools show log;
 import '../firebase_options.dart';
 
 class RegisterView extends StatefulWidget {
@@ -71,19 +73,40 @@ class _RegisterViewState extends State<RegisterView> {
                               final userCredential = await FirebaseAuth.instance
                                   .createUserWithEmailAndPassword(
                                       email: email, password: password);
-
-                              print("userCredential${userCredential}");
+                              final user =
+                                  await FirebaseAuth.instance.currentUser;
+                              await user?.sendEmailVerification();
+                              Navigator.of(context).pushNamed(verifyEmailRoute);
+                              devtools.log(userCredential.toString());
                             } on FirebaseAuthException catch (e) {
-                              print(e.code);
+                              devtools.log(e.code.toString());
                               if (e.code == 'weak-password') {
-                                print('weak password');
-                                final snackBar = SnackBar(
-                                  backgroundColor: Colors.cyan,
-                                  content: Text(e.code.toString()),
+                                devtools.log('weak password');
+                                await showErrorDialog(
+                                  context,
+                                  'weak password',
                                 );
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(snackBar);
+                              } else if (e.code == 'email-already-in-use') {
+                                await showErrorDialog(
+                                  context,
+                                  'Email Already In Use ',
+                                );
+                              } else if (e.code == 'invalid-email') {
+                                await showErrorDialog(
+                                  context,
+                                  'Invalid Email',
+                                );
+                              } else {
+                                await showErrorDialog(
+                                  context,
+                                  'Error:${e.code}',
+                                );
                               }
+                            } catch (e) {
+                              await showErrorDialog(
+                                context,
+                                'Error:${e.toString()}',
+                              );
                             }
                           },
                           child: const Text('Register'),
@@ -92,7 +115,7 @@ class _RegisterViewState extends State<RegisterView> {
                       TextButton(
                           onPressed: () {
                             Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/login/', (route) => false);
+                                loginRoutes, (route) => false);
                           },
                           child: const Text('Already Registered ? Login here!'))
                     ],

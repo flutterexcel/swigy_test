@@ -1,8 +1,10 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:developer' as devtools show log;
 
-import '../firebase_options.dart';
+import 'package:new_flutter/constants/routes.dart';
+
+import '../utilities/show_error_dialouge.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -61,36 +63,48 @@ class _LoginViewState extends State<LoginView> {
                     final password = _password.text;
 
                     try {
-                      final userCredential = await FirebaseAuth.instance
-                          .signInWithEmailAndPassword(
-                              email: email, password: password);
+                      // await userCredential =
+                      await FirebaseAuth.instance.signInWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
 
-                      print("userCredential${userCredential}");
+                      final user = FirebaseAuth.instance.currentUser;
+
+                      if (user?.emailVerified ?? false) {
+                        // user's email is verified
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            notesRoutes, (route) => false);
+                      } else {
+                        // user's email is not verified
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            verifyEmailRoute, (route) => false);
+                      }
                     } on FirebaseAuthException catch (e) {
-                      print(e.code);
+                      devtools.log(e.code);
                       if (e.code == 'user-not-found') {
-                        print("User not Found");
-                        const snackBar = SnackBar(
-                          backgroundColor: Colors.cyan,
-                          content: Text("User not Found"),
+                        // devtools.log("User not Found");
+                        await showErrorDialog(
+                          context,
+                          "User not Found",
                         );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       } else if (e.code == 'wrong-password') {
-                        print("Wrong passcode");
-                        const snackBar = SnackBar(
-                          backgroundColor: Colors.cyan,
-                          content: Text("Wrong password"),
+                        // devtools.log("Wrong passcode");
+                        await showErrorDialog(
+                          context,
+                          "Wrong passcode",
                         );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      } else {
+                        await showErrorDialog(
+                          context,
+                          "Error ${e.code}",
+                        );
                       }
                     } catch (e) {
-                      print(e);
-                      print("runtime${e.runtimeType}");
-                      final snackBar = SnackBar(
-                        backgroundColor: Colors.cyan,
-                        content: Text(e.toString()),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      devtools.log(e.toString());
+                      await showErrorDialog(context, e.toString());
                     }
                   },
                   child: const Text('Login'),
@@ -99,7 +113,7 @@ class _LoginViewState extends State<LoginView> {
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pushNamedAndRemoveUntil(
-                        '/register/', (route) => false);
+                        registerRoutes, (route) => false);
                   },
                   child: const Text('Not Registered yet ? Register here'))
             ],
