@@ -1,42 +1,41 @@
 import 'package:new_flutter/services/auth/auth_provider.dart';
 import 'package:new_flutter/services/auth/auth_user.dart';
+import 'package:new_flutter/services/auth/firebase_auth_provider.dart';
 
 class AuthService implements Authprovider {
   final Authprovider provider;
 
   const AuthService(this.provider);
+  factory AuthService.firebase() => AuthService(
+        FireBaseAuthProvider(),
+      );
+
+  @override
+  Future<void> initialize() => provider.initialize();
 
   @override
   // TODO: implement CurrentUser
-  AuthUser? get CurrentUser => throw UnimplementedError();
+  AuthUser? get currentUser => provider.currentUser;
 
   @override
   Future<AuthUser> createUser({
     required String email,
     required String password,
-  }) {
-    // TODO: implement createUser
-    throw UnimplementedError();
-  }
-
+  }) =>
+      provider.createUser(
+        email: email,
+        password: password,
+      );
   @override
   Future<AuthUser> logIn({
     required String email,
     required String password,
-  }) {
-    // TODO: implement logIn
-    throw UnimplementedError();
-  }
+  }) =>
+      provider.logIn(email: email, password: password);
 
   @override
-  Future<void> logOut() {
-    // TODO: implement logOut
-    throw UnimplementedError();
-  }
+  Future<void> logOut() => provider.logOut();
 
   @override
-  Future<void> sendEmailVerification() {
-    // TODO: implement sendEmailVerification
-    throw UnimplementedError();
-  }
+  Future<void> sendEmailVerification() => provider.sendEmailVerification();
 }

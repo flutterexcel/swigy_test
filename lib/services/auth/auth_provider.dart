@@ -1,7 +1,8 @@
-import 'package:new_flutter/services/auth_user.dart';
+import 'package:new_flutter/services/auth/auth_user.dart';
 
 abstract class Authprovider {
-  AuthUser? get CurrentUser;
+  Future<void> initialize();
+  AuthUser? get currentUser;
   Future<AuthUser> logIn({
     required String email,
     required String password,
