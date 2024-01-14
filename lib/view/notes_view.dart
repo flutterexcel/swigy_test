@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:new_flutter/constants/routes.dart';
 import 'package:new_flutter/services/auth/auth_services.dart';
+import 'package:new_flutter/services/crud/notes_services.dart';
 import 'dart:developer' as devtools show log;
 import '../enums/menu_action.dart';
 
@@ -12,8 +15,25 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> {
+  late final NotesService _notesService;
+  String? get userEmail => AuthService.firebase().currentUser!.email;
+  @override
+  void initState() {
+    super.initState();
+    _notesService = NotesService();
+
+    _notesService.open();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _notesService.close();
+  }
+
   @override
   Widget build(BuildContext context) {
+    log("Email is verified11");
     return Scaffold(
       appBar: AppBar(title: const Text("Main Ui"), actions: [
         PopupMenuButton<MenuAction>(
@@ -33,10 +53,25 @@ class _NotesViewState extends State<NotesView> {
                       .pushNamedAndRemoveUntil(loginRoutes, (_) => false);
                 }
                 break;
+              case MenuAction.nulll:
+                // TODO: Handle this case.
+                break;
             }
           },
         )
       ]),
+      body: FutureBuilder(
+        future: _notesService.getOrCreateUser(email: userEmail ?? ''),
+        builder: (BuildContext context, AsyncSnapshot<DataBaseUser> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              return const Text('Your Notes will appear here');
+
+            default:
+              return const CircularProgressIndicator();
+          }
+        },
+      ),
     );
   }
 }
